@@ -16,6 +16,8 @@
   roles:
     - name: local.powerline
       tags: powerline
+    - name: local.binenv
+      tags: binenv
     - name: local.kube-preflight
       tags: containerd
     - name: local.kubectl-utils
