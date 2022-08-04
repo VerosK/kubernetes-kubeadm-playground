@@ -1,7 +1,6 @@
 ---
-apiVersion: "kubeadm.k8s.io/v1beta3"
 kind: JoinConfiguration
-
+apiVersion: "kubeadm.k8s.io/v1beta3"
 discovery:
   bootstrapToken:
     apiServerEndpoint: {{ kube_apiserver_advertise_address }}:{{ kube_apiserver_port }}
@@ -9,25 +8,11 @@ discovery:
     caCertHashes:
       - {{ kubernetes_ca_cert_hash }}
     unsafeSkipCAVerification: true
-  timeout: 5m0s
-
 
 nodeRegistration:
   imagePullPolicy: IfNotPresent
   name: {{ kube_node_name|to_json }}
-  taints:
-  - key: node-role.kubernetes.io/master
-    effect: "NoSchedule"
   ignorePreflightErrors: [ NumCPU ]
 
   kubeletExtraArgs:
         node-ip: '{{  kube_advertise_address }}'
-        hostname-override: {{ kube_node_name|to_json }}
-
-controlPlane:
-    localAPIEndpoint:
-      advertiseAddress: "{{ kube_advertise_address }}"
-      bindPort: {{ kube_apiserver_bind_port }}
-    certificateKey: '{{ kube_certificate_encryption_keys }}'
-
-

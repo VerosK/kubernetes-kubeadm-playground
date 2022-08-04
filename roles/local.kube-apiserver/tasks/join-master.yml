@@ -7,7 +7,6 @@
   args:
     creates: /etc/kubernetes/manifests/kube-apiserver.yaml
 
-
 - name: Check we have apiserver manifest
   file:
     path: /etc/kubernetes/manifests/kube-apiserver.yaml
@@ -33,11 +32,23 @@
     kubernetes_ca_cert_hash: 'sha256:{{ kubernetes_ca_cert_der.stdout.split()[0] }}'
     kubernetes_join_token: '{{ kubernetes_join_token.stdout }}'
 
+- name: Create join config dir
+  file:
+    path: '/etc/kubernetes/join'
+    state: directory
+
 - name: "Generate join configs for master"
   template:
     src: "kubeadmcfg-join-master.yaml.j2"
-    dest: "/etc/kubernetes/init/kubeadmcfg.yaml"
+    dest: "/etc/kubernetes/join/kubeadmcfg.yaml"
+
+- name: Create setup script
+  copy:
+    dest: /root/join-kubeadm.sh
+    content: |
+      kubeadm join {{ kubeadm_extra_params }} --config /etc/kubernetes/join/kubeadmcfg.yaml -v2
+  failed_when: kubeadm_stop_before_run
 
 - name: "Join other masters"
   command:
-    kubeadm join {{ kubeadm_extra_params }} --config /etc/kubernetes/init/kubeadmcfg.yaml
+    kubeadm join {{ kubeadm_extra_params }} --config /etc/kubernetes/join/kubeadmcfg.yaml

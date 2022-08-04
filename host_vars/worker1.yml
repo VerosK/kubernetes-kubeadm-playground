@@ -1,0 +1,4 @@
+
+kubeadm_is_master: false
+kubeadm_is_first_master: false
+kubeadm_is_worker: true

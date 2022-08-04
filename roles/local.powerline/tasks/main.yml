@@ -1,0 +1,26 @@
+- set_fact:
+     powerline_url: https://github.com/justjanne/powerline-go/releases/download/v1.21.0/powerline-go-linux-amd64
+  when: ansible_architecture == 'x86_64'
+
+- set_fact:
+       powerline_url: https://github.com/justjanne/powerline-go/releases/download/v1.21.0/powerline-go-linux-arm64
+  when: ansible_architecture == 'aarch64'
+
+- name: Get powerline
+  get_url:
+     url: '{{ powerline_url }}'
+     dest: /usr/local/bin/powerline-go
+     mode: 0755
+     owner: root
+
+- name: Install script
+  copy:
+     dest: /etc/profile.d/powerline.sh
+     content: |
+       function _update_ps1() {
+         PS1="$( /usr/local/bin/powerline-go -error $? -jobs $(jobs -p | wc -l) --modules "venv,user,host,ssh,cwd,perms,git,kube,jobs,exit,root" -newline )"
+       }
+
+       if [ "$TERM" != "linux" ] && [ -x "/usr/local/bin/powerline-go" ]; then
+           PROMPT_COMMAND="_update_ps1; $PROMPT_COMMAND"
+       fi

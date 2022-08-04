@@ -1,0 +1,11 @@
+
+# Add extra parameters to kubeadm in you group_vars
+kubeadm_extra_params: ''
+kubeadm_init_dir: /root/kubeadm-init
+
+
+# Time to live for Join token
+kubeadm_token_ttl: 3600s
+
+# stop on debug
+kubeadm_debug: true

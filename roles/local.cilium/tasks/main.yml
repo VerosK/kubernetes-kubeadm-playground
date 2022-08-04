@@ -1,0 +1,31 @@
+
+- name: Mount BPF filesystem
+  mount:
+    src: bpffs
+    path: /sys/fs/bpf
+    fstype: bpf
+    state: mounted
+    boot: yes
+
+- name: Ensure kenrnel
+  fail:
+    msg: Too old kerne
+  when:
+    ansible_kernel < '5.4'
+
+- name: Expand cilium
+  unarchive:
+    src: https://github.com/cilium/cilium-cli/releases/latest/download/cilium-linux-amd64.tar.gz
+    dest: /usr/local/bin
+    creates: /usr/local/bin/cilium
+    remote_src: true
+
+- name: Expand hubble
+  unarchive:
+    src:  https://github.com/cilium/hubble/releases/download/{{ hubble_version }}/hubble-linux-amd64.tar.gz
+    dest: /usr/local/bin
+    creates: /usr/local/bin/hubble
+    remote_src: true
+
+#- name: Setup cilium
+#  shell: cilium install

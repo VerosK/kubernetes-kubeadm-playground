@@ -1,0 +1,20 @@
+- name: Assert we're on worker nodes
+  assert:
+    that: not kube_is_apiserver|default(False)
+
+- name: Assert that kube_first_apiserver_name is defined
+  assert:
+    that:  kube_first_apiserver_name|default(None)
+
+- name: Check kubelet is configured
+  file:
+    path: /var/lib/kubelet/kubeadm-flags.env
+    state: file
+  ignore_errors: yes
+  register: _have_kubelet_config
+
+- name: Join master node (when required)
+  include: join-node.yml
+  when: _have_kubelet_config is failed
+
+

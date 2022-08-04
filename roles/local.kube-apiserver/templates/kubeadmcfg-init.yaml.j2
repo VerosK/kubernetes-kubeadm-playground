@@ -4,6 +4,12 @@ apiVersion: kubeadm.k8s.io/v1beta3
 localAPIEndpoint:
   advertiseAddress: "{{ kube_apiserver_advertise_address }}"
   bindPort: {{ kube_apiserver_bind_port }}
+certificateKey: '{{ kube_certificate_encryption_keys }}'
+
+nodeRegistration:
+    kubeletExtraArgs:
+        hostname-override: {{ kube_node_name|to_json }}
+        node-ip: '{{  kube_advertise_address }}'
 
 ---
 apiVersion: kubeadm.k8s.io/v1beta3
@@ -35,9 +41,11 @@ dns: {}
 etcd:
   local:
     dataDir: /var/lib/etcd
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
 
 ---
-
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
 mode: "ipvs"

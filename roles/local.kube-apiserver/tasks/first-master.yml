@@ -14,18 +14,17 @@
   args:
     creates: /etc/kubernetes/manifests/kube-apiserver.yaml
 
-- name: Create config
+- name: Create setup script
   copy:
     dest: /root/init-kubeadm.sh
     content: |
-      kubeadm init --upload-certs {{ kubeadm_extra_params }} --config {{ kubeadm_init_dir }}/kubeadmcfg.yaml
-  #failed_when: true
-
+      kubeadm init --upload-certs {{ kubeadm_extra_params }} --config {{ kubeadm_init_dir }}/kubeadmcfg.yaml -v2
+  failed_when: kubeadm_stop_before_run
 
 - name: "Init kube-apiserver on first master node"
   command:
     cmd: kubeadm init --upload-certs {{ kubeadm_extra_params }} --config {{ kubeadm_init_dir }}/kubeadmcfg.yaml
-    creates: kubeadm init --upload-certs {{ kubeadm_extra_params }} --config {{ kubeadm_init_dir }}/kubeadmcfg.yaml
+    #creates: kubeadm init --upload-certs {{ kubeadm_extra_params }} --config {{ kubeadm_init_dir }}/kubeadmcfg.yaml
   register: k8s_init_results
 
 - name: Prepare root .kube config

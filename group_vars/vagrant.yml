@@ -1,6 +1,14 @@
 
 kubeadm_is_first_master: true
 
+# this is inventory name of the first master node
+kube_first_apiserver_name: master1
 
 kube_apiserver_host: '192.168.49.41'
-kube_apiserver_advertise_address: '192.168.49.41'
+
+kubeadm_token_ttl: 60m
+
+kube_advertise_address: '{{ ansible_enp0s8.ipv4.address }}'
+kube_apiserver_advertise_address: '{{ kube_apiserver_host }}'
+
+kubeadm_stop_before_run: true

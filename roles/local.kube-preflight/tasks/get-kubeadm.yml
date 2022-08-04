@@ -36,6 +36,5 @@
   args:
     creates: '/etc/bash_completion.d/{{ item }}'
   loop:
-    - kubectl
     - kubeadm
 

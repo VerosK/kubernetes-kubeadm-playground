@@ -1,9 +1,6 @@
-- name: Check connectivity
+- name: Ensure facts
   hosts: all
   tasks:
-    - name: check connectivity
-      ping:
-
     - setup:
       register: _facts
 
@@ -11,3 +8,30 @@
         content: '{{ _facts|to_nice_json() }}'
         dest: /tmp/facts.yml
 
+
+- name: Install kube
+  hosts: all
+  tags: kubernetes
+
+  roles:
+    - name: local.powerline
+      tags: powerline
+    - name: local.kube-preflight
+      tags: containerd
+    - name: local.kubectl-utils
+      tags: utils
+    - name: local.kube-apiserver
+      tags: apiserver
+      when: kubeadm_is_master
+    - name: local.kube-worker
+      tags: worker
+      when: kubeadm_is_worker
+
+
+- name: Setup cilium
+  hosts: master1
+  tags: cilium
+
+  roles:
+    - name: local.cilium
+      tags: cilium

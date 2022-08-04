@@ -1,8 +1,23 @@
 
+- name: Check kubelet is configured
+  file:
+    path: /var/lib/kubelet/kubeadm-flags.env
+    state: file
+  ignore_errors: yes
+  register: _have_kubelet_config
+
+
 - name: Preload container images
   command:
       kubeadm config images pull
 
 - name: ensure first master
   include: first-master.yml
-  when: kubeadm_is_first_master
+  when: kubeadm_is_first_master and _have_kubelet_config is failed
+
+- name: ensure others masters
+  include: join-master.yml
+  when:
+    kubeadm_is_master and 
+    not kubeadm_is_first_master and
+    _have_kubelet_config is failed

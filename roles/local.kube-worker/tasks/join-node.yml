@@ -1,0 +1,36 @@
+- name: Prepare preflight config dir
+  file:
+    path: '{{ kubeadm_init_dir }}'
+    state: directory
+
+- name: Get CA cert hash from the master
+  shell:
+    openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin -outform DER | sha256sum
+  register: 'kubernetes_ca_cert_der'
+  delegate_to: '{{ kube_first_apiserver_name }}'
+
+- name: Get Registration token from the master
+  shell:
+    kubeadm token create --ttl {{ kubeadm_token_ttl }} --kubeconfig /etc/kubernetes/admin.conf
+  register: 'kubernetes_join_token'
+  delegate_to: '{{ kube_first_apiserver_name }}'
+
+- name: Prepare registration
+  set_fact:
+    kubernetes_ca_cert_hash: 'sha256:{{ kubernetes_ca_cert_der.stdout.split()[0] }}'
+    kubernetes_join_token: '{{ kubernetes_join_token.stdout }}'
+
+- name: "Generate join configs for worker node"
+  template:
+    src: "kubeadmcfg-join.yaml.j2"
+    dest: "{{ kubeadm_init_dir }}/kubeadmcfg-join.yaml"
+
+- fail:
+    msg: Stop here on provision
+  when: kubeadm_stop_before_run
+
+- name: Join master
+  shell:
+      kubeadm join {{ kubeadm_extra_params }} --config {{ kubeadm_init_dir }}/kubeadmcfg-join.yaml
+  args:
+    creates: /var/lib/kubelet/kubeadm-flags.env

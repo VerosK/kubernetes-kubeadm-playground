@@ -1,4 +1,4 @@
 
 kubeadm_is_master: true
-kubeadm_is_first_master: true
+kubeadm_is_first_master: false
 kubeadm_is_worker: false
