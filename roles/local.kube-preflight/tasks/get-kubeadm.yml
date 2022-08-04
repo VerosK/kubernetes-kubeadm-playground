@@ -1,0 +1,41 @@
+
+- name: Add CA certificats
+  apt:
+    name: apt-transport-https,ca-certificates,curl
+    state: present
+
+- name: Get DEB certificates
+  get_url:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    dest: /usr/share/keyrings/kubernetes-archive-keyring.gpg
+  notify:
+    - apt update
+
+- name: Ensure apt repo
+  copy:
+    content:
+      deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg]
+      https://apt.kubernetes.io/ kubernetes-xenial main
+    # yes, use xenial even on focal
+    dest: /etc/apt/sources.list.d/kubernetes.list
+  notify:
+    - apt update
+
+- meta: flush_handlers
+
+- name: Ensure kubeadm
+  apt:
+    name: kubectl,kubeadm,kubelet
+    state: present
+    cache_valid_time: '3600'
+
+- name: Add completion commands
+  tags: completion
+  shell:
+    '{{ item }} completion bash >> /etc/bash_completion.d/{{ item }}'
+  args:
+    creates: '/etc/bash_completion.d/{{ item }}'
+  loop:
+    - kubectl
+    - kubeadm
+

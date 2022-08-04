@@ -1,0 +1,13 @@
+- name: Check connectivity
+  hosts: all
+  tasks:
+    - name: check connectivity
+      ping:
+
+    - setup:
+      register: _facts
+
+    - copy:
+        content: '{{ _facts|to_nice_json() }}'
+        dest: /tmp/facts.yml
+

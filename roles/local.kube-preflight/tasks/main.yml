@@ -1,0 +1,14 @@
+- name: Ensure br_netfilter
+  include: setup-netfilter.yml
+
+- name: Disable swap
+  include: disable-swap.yml
+
+- name: Ensure requirements
+  include: setup-sysctls.yml
+
+- name: Ensure containerd
+  include: setup-containerd.yml
+
+- name: Ensure kubeadm packages
+  include: get-kubeadm.yml

@@ -1,0 +1,48 @@
+- name: Prepare preflight config dir
+  file:
+    path: '{{ kubeadm_init_dir }}'
+    state: directory
+
+- name: "Generate initial configs"
+  template:
+      src: "kubeadmcfg-init.yaml.j2"
+      dest: "{{ kubeadm_init_dir }}/kubeadmcfg.yaml"
+
+- name: Pull required images
+  command:
+    kubeadm config images pull
+  args:
+    creates: /etc/kubernetes/manifests/kube-apiserver.yaml
+
+- name: Create config
+  copy:
+    dest: /root/init-kubeadm.sh
+    content: |
+      kubeadm init --upload-certs {{ kubeadm_extra_params }} --config {{ kubeadm_init_dir }}/kubeadmcfg.yaml
+  #failed_when: true
+
+
+- name: "Init kube-apiserver on first master node"
+  command:
+    cmd: kubeadm init --upload-certs {{ kubeadm_extra_params }} --config {{ kubeadm_init_dir }}/kubeadmcfg.yaml
+    creates: kubeadm init --upload-certs {{ kubeadm_extra_params }} --config {{ kubeadm_init_dir }}/kubeadmcfg.yaml
+  register: k8s_init_results
+
+- name: Prepare root .kube config
+  file:
+    path: /root/.kube
+    state: directory
+
+- name: Prepare root .kube config
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    remote_src: true
+    force: no  # do not overwrite
+
+- name: Fetch kube-config
+  fetch:
+    flat: true
+    src: /etc/kubernetes/admin.conf
+    dest: ./kubeconfig
+  changed_when: false

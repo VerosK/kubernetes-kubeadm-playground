@@ -1,0 +1,32 @@
+
+kubernetes_sysctls:
+  - #name: "Pass bridged IPv4 traffic to iptables (kube-router)"
+    key: net.bridge.bridge-nf-call-iptables
+    value: 1
+  - #name: "Arp flux with multiple interfaces"
+    key: net.ipv4.conf.default.arp_announce
+    value: 1
+  - #name: "Arp flux with multiple interfaces"
+    key: net.ipv4.conf.all.arp_announce
+    value: 1
+  - #name: "Arp flux with multiple interfaces"
+    key: net.ipv4.conf.default.arp_ignore
+    value: 2
+  - #name: "Arp flux with multiple interfaces"
+    key: net.ipv4.conf.all.arp_ignore
+    value: 2
+  - #name: "Enable rp-filter (kube-router)"
+    key: net.ipv4.conf.all.rp_filter
+    value: 1
+  - #name: "Enable rp-filter (kube-router)"
+    key: net.ipv4.conf.default.rp_filter
+    value: 1
+
+  - # name: Ensure ip_forward is enabled
+    key: net.ipv4.ip_forward
+    value: 1
+
+  - #name: "Enable user namespaces for Buildah in Docker"
+    key: user.max_user_namespaces
+    value: 15000
+

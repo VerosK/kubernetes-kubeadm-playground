@@ -1,0 +1,8 @@
+
+
+- name: Setup sysctls
+  sysctl:
+    name: '{{ item.key }}'
+    value: "{{ item.value }}"
+    sysctl_set: yes
+  loop: '{{ kubernetes_sysctls }}'

@@ -1,0 +1,43 @@
+#    kubeadm join apiserver:6443 --token fmwoxb.tggcqvanv3xma6vn \
+#        --discovery-token-ca-cert-hash sha256:61b3e2aea41f82a5a9ff6bd59e11d372f8807d6b93444ef9a4b8478d9aa2aa2d
+
+- name: Pull required images
+  command:
+    kubeadm config images pull
+  args:
+    creates: /etc/kubernetes/manifests/kube-apiserver.yaml
+
+
+- name: Check we have apiserver manifest
+  file:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    state: file
+  ignore_errors: yes
+  register: _have_apiserver
+
+- name: Get CA cert hash
+  shell:
+    openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin -outform DER | sha256sum
+  register: 'kubernetes_ca_cert_der'
+  delegate_to: '{{ kube_first_apiserver_name }}'
+  when: _have_apiserver.failed
+
+- name: Get Registration token
+  shell:
+    kubeadm token create --ttl {{ kubeadm_token_ttl }} --kubeconfig /etc/kubernetes/admin.conf
+  register: 'kubernetes_join_token'
+  delegate_to: '{{ kube_first_apiserver_name }}'
+  when: _have_apiserver.failed
+
+- set_fact:
+    kubernetes_ca_cert_hash: 'sha256:{{ kubernetes_ca_cert_der.stdout.split()[0] }}'
+    kubernetes_join_token: '{{ kubernetes_join_token.stdout }}'
+
+- name: "Generate join configs for master"
+  template:
+    src: "kubeadmcfg-join-master.yaml.j2"
+    dest: "/etc/kubernetes/init/kubeadmcfg.yaml"
+
+- name: "Join other masters"
+  command:
+    kubeadm join {{ kubeadm_extra_params }} --config /etc/kubernetes/init/kubeadmcfg.yaml

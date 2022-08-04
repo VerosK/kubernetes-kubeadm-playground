@@ -1,0 +1,21 @@
+---
+kind: JoinConfiguration
+apiVersion: "kubeadm.k8s.io/v1beta2"
+nodeRegistration: 
+  taints:
+  - key: node-role.kubernetes.io/master
+    effect: "NoSchedule"
+  ignorePreflightErrors: [ NumCPU ]
+controlPlane:
+    localAPIEndpoint:
+      advertiseAddress: "{{ kube_advertise_address }}"
+      bindPort: {{ kube_apiserver_bind_port }}
+    certificateKey: '{{ certificate_encryption_keys }}'
+
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: {{ apiserver_host }}:{{ apiserver_port }}
+    token: {{ kubernetes_join_token }}
+    caCertHashes:
+      - {{ kubernetes_ca_cert_hash }}
+  timeout: 10s

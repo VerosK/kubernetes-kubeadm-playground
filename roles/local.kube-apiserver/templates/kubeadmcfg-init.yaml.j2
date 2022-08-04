@@ -1,0 +1,45 @@
+---
+kind: InitConfiguration
+apiVersion: kubeadm.k8s.io/v1beta3
+localAPIEndpoint:
+  advertiseAddress: "{{ kube_apiserver_advertise_address }}"
+  bindPort: {{ kube_apiserver_bind_port }}
+
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+
+controlPlaneEndpoint: "{{ kube_apiserver_host }}:{{ kube_apiserver_port }}"
+certificatesDir: /etc/kubernetes/pki
+
+clusterName:
+
+apiServer:
+  extraArgs:
+    allow-privileged: "true"
+  timeoutForControlPlane: 5m0s
+
+controllerManager:
+  extraArgs:
+    allocate-node-cidrs: "true"
+
+scheduler: {}
+
+networking:
+  podSubnet: "{{ kube_cluster_cidr }}" # --pod-network-cidr
+  serviceSubnet: "{{ kube_service_cidr }}" # --service-network-cidr
+  dnsDomain: "{{ kube_dns_domain }}" # --service-dns-domain
+
+dns: {}
+
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+
+---
+
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "ipvs"
+#ipvs: -- done via iptables
+#  excludeCIDRs: ["10.0.0.0/32"]  # TODO - external_cidrs z inventory

@@ -1,0 +1,8 @@
+
+- name: Preload container images
+  command:
+      kubeadm config images pull
+
+- name: ensure first master
+  include: first-master.yml
+  when: kubeadm_is_first_master

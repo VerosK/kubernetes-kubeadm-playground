@@ -1,0 +1,11 @@
+
+- name: Ensure br_netfilter
+  copy:
+    content: "br_netfilter"
+    dest: /etc/modules-load.d/br_netfilter.conf
+  register: _br_netfilter
+
+- name: Ensure br_netfilter
+  command:
+    modprobe br_netfilter
+  when: _br_netfilter.changed
